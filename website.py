@@ -23,16 +23,24 @@ class Book(db.Model):
     def __repr__(self):
         return "<Title: {}>".format(self.title)
 
-@app.route("/", methods=["GET", "POST"])
+@app.route('/', methods=["GET", "POST"])
 def home():
+    books = None
     if request.form:
  # grab the "title" input from our form, and use it to initialize a new Book object.
  # We save this new Book to a variable named book
-        book = Book(title=request.form.get("title"))
- # We then add the book to our database and commit our changes to persist them
-        db.session.add(book)
-        db.session.commit()
-    return render_template("home.html")
+        try:
+            book = Book(title=request.form.get("title"))
+            # We then add the book to our database and commit our changes to persist them
+            db.session.add(book)
+            db.session.commit()
+        # a line to retrieve all of the books just before the end of the home() function and
+        # modify the last line to pass these books through to our front-end template.
+        except Exception as e:
+            print("Failed to add book")
+            print(e)
+    books = Book.query.all()
+    return render_template("home.html", books=books)
 
 if __name__ == "__main__":
     app.run(debug=True)
